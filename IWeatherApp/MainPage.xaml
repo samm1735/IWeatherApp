@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:model="clr-namespace:IWeatherApp.Models"
+             x:Class="IWeatherApp.MainPage"
+             
+             >
+
+
+    <VerticalStackLayout
+        Padding="30,0"
+        Spacing="25">
+
+
+        <Label
+            Text="{Binding name}"
+            Style="{StaticResource SubHeadline}"
+            x:Name="theCity"
+            SemanticProperties.HeadingLevel="Level1" 
+            FontSize="Large"
+            />
+
+        <Label
+            Text=""
+            x:Name="theDate"
+            HorizontalOptions="Center"
+            FontSize="Subtitle"
+            />
+
+        <Image
+            Source="unknown_96.png"
+            HeightRequest="185"
+            Aspect="AspectFit"
+            SemanticProperties.Description="Weather status icon" 
+            x:Name="weatherStatusIcon"
+            />
+
+        <HorizontalStackLayout
+            Padding="10"
+            Spacing="20"
+            HorizontalOptions="Center"
+            >
+
+            <Label
+                Text="{Binding main.temp}"
+                HorizontalOptions="Center"
+                FontSize="Subtitle"
+                    
+                x:Name="theTemp"
+            />
+
+            <Label
+                Text="{Binding weather[0].main}"
+                HorizontalOptions="Center"
+                FontSize="Subtitle"
+            />
+
+        </HorizontalStackLayout>
+
+
+        <HorizontalStackLayout
+        Padding="20"
+        Spacing="40"
+        HorizontalOptions="Center"
+        >
+
+            <!--    Ajouter le prefixe dvant tous les x:Name est une convention utilisée pour ce projet    -->
+            <Label
+                Text="Feels like"
+                x:Name="theFeelsLike"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                HorizontalTextAlignment="Center"
+            />
+                
+                <Label
+                Text="Wind"
+                x:Name="theWind"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                HorizontalTextAlignment="Center"
+            />
+                
+                <Label
+                Text="Humidity"
+                x:Name="theHumidity"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                HorizontalTextAlignment="Center"
+            />
+                
+                
+
+
+
+        </HorizontalStackLayout>
+
+
+
+
+    </VerticalStackLayout>
+
+
+</ContentPage>
