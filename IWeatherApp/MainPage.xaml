@@ -9,7 +9,10 @@
 
     <VerticalStackLayout
         Padding="30,0"
-        Spacing="25">
+        Spacing="25"
+        Margin="0,80,0,0"
+        >
+        
 
 
         <Label
@@ -95,6 +98,53 @@
 
         </HorizontalStackLayout>
 
+
+        <Border
+            
+            StrokeThickness="2"
+            Stroke="Aqua"
+            StrokeLineJoin="Round"
+            
+            Padding="20"
+            Margin="20,0,20,0"
+            HorizontalOptions="Center"
+            
+            MinimumHeightRequest="120"
+            MaximumHeightRequest="200"
+        >
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="20"/>
+            </Border.StrokeShape>
+
+            <VerticalStackLayout>
+                
+            
+                <Label
+                    Text="..."
+                    x:Name="theForecastDate"
+                    HorizontalOptions="Center"
+                    FontSize="Small"
+                />
+
+                <Image
+                    Source="unknown_96.png"
+                    HeightRequest="85"
+                    Margin="0,10,0,10"
+                    Aspect="AspectFit"
+                    SemanticProperties.Description="Weather status icon" 
+                    x:Name="forecastStatusIcon"
+                />
+
+                <Label
+                    Text="..."
+                    x:Name="theForecastTemps"
+                    HorizontalOptions="Center"
+                    FontSize="Small"
+                />
+
+            </VerticalStackLayout>
+
+        </Border>
 
 
 

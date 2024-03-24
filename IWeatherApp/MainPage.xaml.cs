@@ -8,35 +8,47 @@ namespace IWeatherApp
 {
 
     /// <summary>
-    ///     Nom    : ISAAC 
-    ///     Prenom : Sammuel Ramclief
-    ///     Cours  : C# II
+    /// 
+    ///     Nom         : ISAAC 
+    ///     Prenom      : Sammuel Ramclief
+    ///     Cours       : C# II
     ///     Devoir I
     ///     Description : Application mobile developpée avec .Net MAUI et l'API OpenWeather.
     ///                   Le projet n'utilise pas le système de design MVVM vu que cela n'a pas été demandé.
+    ///                   
     ///                   Toutefois des repertoires Models et Services ont été créés pour rendre le code plus clair.
     ///                   
     ///                   Models    |
-    ///                             |--> WeatherInfos.cs
+    ///                             |--> WeatherInfos.cs    //Pour le climat actuel
+    ///                             |--> ForecastInfos.cs   //Pour le climat du lendemain
     ///                   
     ///                   
     ///                   Services  |
-    ///                             |--> GetWeatherService.cs
+    ///                             |--> GetWeatherService.cs    //Pour le climat actuel
+    ///                             |--> GetForecastService.cs  //Pour le climat du lendemain
+    ///                             
+    /// 
+    ///     API utilisé : OpenWeatherMap
+    ///                 Liens :
+    ///                         --> Current Weather : https://openweathermap.org/current
+    ///                         --> 5 Days/3 hours forecast : https://openweathermap.org/forecast5
+    ///                         
+    /// 
     /// </summary>
-    
+
 
     public partial class MainPage : ContentPage
     {
 
-        public WeatherInfos weatherInfos;
+        public WeatherInfos weatherInfos; //Pour le climat actuel
+
+        public ForecastInfos forecastInfos; // Pour le climat futur
 
         public MainPage()
         {
             InitializeComponent();
 
-            /// App title
-            //  Le I prefixant WeatherApp est pour utiliser mon nom
-            Title = "IWeatherApp";
+            Title = ""; // Pour effacer le titre "Home" qui vient de base
 
             //Si l'appereil n'est pas connecté à internet nous verrons un ecran pardefaut
 
@@ -48,6 +60,9 @@ namespace IWeatherApp
             {
                 GetDefaultUI();
             }
+
+            
+
             
         }
 
@@ -59,9 +74,9 @@ namespace IWeatherApp
 
         private async void GetDataToUI()
         {
-            
+
             weatherInfos = await GetWeatherService.getWeatherInfos();
-            
+
             BindingContext = weatherInfos;
 
 
@@ -85,9 +100,12 @@ namespace IWeatherApp
             DateTime currentDate = DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).DateTime;
 
             // Format the DateTime object as a string
-            string formattedDate = currentDate.ToString("ddd, dd MMM yyyy");
+            string formattedDate = currentDate.ToString("dddd, dd MMM yyyy");
 
             theDate.Text = formattedDate;
+
+
+
 
             //Pour formater la temperature
             theTemp.Text += " °C";
@@ -95,8 +113,12 @@ namespace IWeatherApp
             //Pour formater le label Feels like
             theFeelsLike.Text += $"\n{weatherInfos.main.feels_like} °C";
 
+
+
+
+
             //Pour formater le label Wind
-            //  Vu qu'on utilise &units=mtric pour avoir la température en celcius
+            //  Selon la documentation l'API dnne la vitesse en m/s
             //  speed doit etre multiplié par 3.6 pour avoir la vitesse en km/h et non en m/s
             double theSpeed = weatherInfos.wind.speed * 3.6;
             theSpeed = Math.Floor(theSpeed * 100) / 100;
@@ -106,17 +128,99 @@ namespace IWeatherApp
             theHumidity.Text += $"\n{weatherInfos.main.humidity}%";
 
 
+            ///
+            /// Les lignes suivantes sont pour le forecast
+            ///
+
+
+            forecastInfos = await GetForecastService.getForecastInfos();
+
+
+            // Les variables suivantes seront utilises pour avoir la moyenne de temperature pour le lendemain
+
+            float combinedForecastTemp = 0, combinedForecastFeelsLike = 0;
+
+            // Pour avoir la date du lendemain
+            DateTime tomorrow = DateTime.Today.AddDays(1);
+
+
+            Dictionary<string, int> weatherCount = new Dictionary<string, int>();
+
+            // Pour filtrer a travers les forecast du lendemain
+            foreach (var forecast in forecastInfos.list)
+            {
+
+
+                long forecastUnixTimestamp = forecast.dt;
+                DateTime forecastDateTime = DateTimeOffset.FromUnixTimeSeconds(forecastUnixTimestamp).DateTime;
+
+                if (forecastDateTime.Date == tomorrow)
+                {
+                    //Dans les lignes suivantes nous additionnons les temperatures et les les "feels like" ensemble
+                    //  Plus tard ce sera utilisé pour avoir la moyenne de ces valeurs pour la journee entière
+                    combinedForecastTemp += forecast.main.temp;
+                    combinedForecastFeelsLike += forecast.main.feels_like;
+
+
+
+                    //Dans les lignes suivantes nous verifions les icones de chaque forecast
+                    // Ainsi nous saurons quel icon sera le plus utilisé pour le lendemain
+
+                    string forecastIcon = forecast.weather[0].icon;
+
+                    if (!weatherCount.ContainsKey(forecastIcon))
+                    {
+                        weatherCount[forecastIcon] = 0;
+                    }
+                    weatherCount[forecastIcon]++;
+
+
+                }
+
+            }
+
+            // Find the most frequent weather condition for tomorrow
+            KeyValuePair<string, int> mostFrequentForecastIcon = new KeyValuePair<string, int>("", 0);
+            foreach (var icon in weatherCount)
+            {
+                if (icon.Value > mostFrequentForecastIcon.Value)
+                {
+                    mostFrequentForecastIcon = icon;
+                }
+            }
+
+            // Nous utilisons l'icône de climat le plus répété dans la réponse de l'API comme icône de climat globale pour le lendemain.
+            string overallForecastIcon = mostFrequentForecastIcon.Key;
+
+
+
+
+            //Nou divisions par 8 car selon la documentation nous aurons des intervalles de 3 h, pour 24 h cela fait 8 forecasts.
+
+            combinedForecastTemp /= 8;
+            combinedForecastFeelsLike /= 8;
+
+            
+
+            // Pour les affichage sur l'ecran
+
+            theForecastDate.Text = tomorrow.ToString("ddd");
+
+            theForecastTemps.Text = $"{(int)combinedForecastTemp}°/{(int)combinedForecastFeelsLike}°";
+
+            
+
+            forecastStatusIcon.Source = $"https://openweathermap.org/img/wn/{overallForecastIcon}@4x.png";
+        
+        
+        
         }
 
-
-
-        
-
-        /// <summary>
-        ///     Check if the device is connected to the internet
-        /// </summary>
-        /// <returns> True or Flase </returns>
-        public static bool IsInternetAvailable()
+            /// <summary>
+            ///     Check if the device is connected to the internet
+            /// </summary>
+            /// <returns> True or Flase </returns>
+            public static bool IsInternetAvailable()
             {
                 if (!NetworkInterface.GetIsNetworkAvailable())
                 {
