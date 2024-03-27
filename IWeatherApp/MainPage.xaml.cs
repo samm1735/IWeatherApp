@@ -97,7 +97,14 @@ namespace IWeatherApp
             ////
 
             long unixTimestamp = weatherInfos.dt;
-            DateTime currentDate = DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).DateTime;
+            int timezone = weatherInfos.timezone;
+
+            DateTimeOffset currentDate = DateTimeOffset.FromUnixTimeSeconds(unixTimestamp);
+
+
+            currentDate = currentDate.ToOffset(TimeSpan.FromSeconds(timezone));
+
+            
 
             // Format the DateTime object as a string
             string formattedDate = currentDate.ToString("dddd, dd MMM yyyy");
@@ -141,7 +148,7 @@ namespace IWeatherApp
             float combinedForecastTemp = 0, combinedForecastFeelsLike = 0;
 
             // Pour avoir la date du lendemain
-            DateTime tomorrow = DateTime.Today.AddDays(1);
+            DateTime tomorrow = currentDate.AddDays(1).Date;          
 
 
             Dictionary<string, int> weatherCount = new Dictionary<string, int>();
